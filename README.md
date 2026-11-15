@@ -1,9 +1,10 @@
-# KitLLM
+# LumiKitLLM
 
 可复用的工具包。
 
 ## Package
 
+- Manifest package: `LumiKitLLM`
 - Product: `KitLLM`
 - Platform: macOS 14+
 - Swift tools: 6.0
@@ -16,7 +17,7 @@
 
 ```swift
 dependencies: [
-    .package(path: "../KitLLM"),
+    .package(path: "../LumiKitLLM"),
 ],
 targets: [
     .target(name: "YourTarget", dependencies: ["KitLLM"]),

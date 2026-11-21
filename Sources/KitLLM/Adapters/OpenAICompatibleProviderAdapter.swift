@@ -4,8 +4,19 @@ import KitAgentTool
 public struct OpenAICompatibleProviderAdapter: Sendable {
     public let configuration: OpenAICompatibleProviderConfiguration
 
-    public init(configuration: OpenAICompatibleProviderConfiguration) {
+    /// 响应解析次数计数器（仅供测试观察）。
+    ///
+    /// 生产路径不会使用它；它让测试能断言「成功响应只被解析一次」。
+    /// 实例作用域：每个 adapter / provider 持有独立计数器，并行测试
+    /// 互不污染计数（此前是进程级静态，曾让断言随机失败）。
+    public let responseParseCounter: ParseCounter
+
+    public init(
+        configuration: OpenAICompatibleProviderConfiguration,
+        parseCounter: ParseCounter = ParseCounter()
+    ) {
         self.configuration = configuration
+        self.responseParseCounter = parseCounter
     }
 
     /// 工具调用参数的解析缓存。
@@ -369,13 +380,10 @@ public struct OpenAICompatibleProviderAdapter: Sendable {
         ]
     }
 
-    /// 响应解析次数计数器（仅供测试观察）。
-    ///
-    /// 生产路径不会使用它；它让测试能断言「成功响应只被解析一次」。
-    nonisolated(unsafe) static let responseParseCounter = ParseCounter()
-
     /// 解析次数计数器。
     public final class ParseCounter: @unchecked Sendable {
+        public init() {}
+
         private let lock = NSLock()
         private var total = 0
         private var mainThreadHits = 0
@@ -434,9 +442,9 @@ public struct OpenAICompatibleProviderAdapter: Sendable {
         let response: OpenAICompatibleResponse
         do {
             response = try JSONDecoder().decode(OpenAICompatibleResponse.self, from: data)
-            Self.responseParseCounter.record()
+            responseParseCounter.record()
         } catch {
-            Self.responseParseCounter.record()
+            responseParseCounter.record()
             if let errorResponse = try? JSONDecoder().decode(OpenAICompatibleErrorResponse.self, from: data) {
                 throw OpenAICompatibleProviderError.apiError(message: errorResponse.error.message)
             }

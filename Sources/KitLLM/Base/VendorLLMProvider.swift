@@ -49,6 +49,10 @@ open class VendorLLMProvider: SuperLLMProvider, LLMStreamingProviding {
     /// 默认无同步记录。
     open var lastModelSyncDate: Date? { nil }
 
+    /// 本 provider 的响应解析计数器（仅供测试观察）：每个实例独立，
+    /// 测试各自观察自己的 complete()，并行运行互不干扰。
+    let responseParseCounter = OpenAICompatibleProviderAdapter.ParseCounter()
+
     // MARK: - LLMProviding
 
     open func complete(_ request: LLMRequest) async throws -> LLMResponse {
@@ -118,7 +122,10 @@ open class VendorLLMProvider: SuperLLMProvider, LLMStreamingProviding {
         guard let configuration = openAIConfiguration else {
             throw VendorAPIError.requestFailed("\(providerInfo.displayName) 未配置 OpenAI 端点")
         }
-        let adapter = OpenAICompatibleProviderAdapter(configuration: configuration)
+        let adapter = OpenAICompatibleProviderAdapter(
+            configuration: configuration,
+            parseCounter: responseParseCounter
+        )
         let (tools, reverseMap) = toolSchemas(from: request.tools)
         let model = request.model ?? providerInfo.defaultModel
         // 请求体构建与 JSON 序列化都在后台线程完成：这一步要遍历全部历史

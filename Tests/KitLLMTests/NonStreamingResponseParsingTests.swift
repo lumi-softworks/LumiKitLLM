@@ -10,10 +10,9 @@ import Testing
 ///    + usage 重解析」三次；
 /// 2. **错误信封仍能被正确识别** —— 错误语义不变；
 /// 3. **响应解析不在主线程上同步执行**。
-// - Important: 标 `.serialized`。
-//   解析计数器是进程内共享的静态状态，并行运行的用例会互相干扰计数，
-//   导致「只解析一次」的断言随机失败。
-@Suite("非流式响应解析", .serialized)
+// 解析计数器是实例作用域（每个测试各自持 adapter / provider），
+// 并行运行不会互相干扰计数。
+@Suite("非流式响应解析")
 struct NonStreamingResponseParsingTests {
 
     // MARK: - 辅助
@@ -50,20 +49,20 @@ struct NonStreamingResponseParsingTests {
 
     @Test("成功响应只被完整解析一次")
     func successfulResponseIsParsedOnce() throws {
-        OpenAICompatibleProviderAdapter.responseParseCounter.reset()
+        let adapter = adapter()
         let payload = try data(successPayload())
 
-        _ = try adapter().parseResponse(data: payload)
+        _ = try adapter.parseResponse(data: payload)
 
         #expect(
-            OpenAICompatibleProviderAdapter.responseParseCounter.count == 1,
+            adapter.responseParseCounter.count == 1,
             "成功响应应只被解析一次"
         )
     }
 
     @Test("带工具调用与思考的成功响应同样只解析一次")
     func richSuccessfulResponseIsParsedOnce() throws {
-        OpenAICompatibleProviderAdapter.responseParseCounter.reset()
+        let adapter = adapter()
         let payload = try data([
             "id": "chatcmpl-2",
             "choices": [[
@@ -83,9 +82,9 @@ struct NonStreamingResponseParsingTests {
             "usage": ["prompt_tokens": 20, "completion_tokens": 8]
         ])
 
-        _ = try adapter().parseResponse(data: payload)
+        _ = try adapter.parseResponse(data: payload)
 
-        #expect(OpenAICompatibleProviderAdapter.responseParseCounter.count == 1)
+        #expect(adapter.responseParseCounter.count == 1)
     }
 
     @Test("错误信封被正确识别")

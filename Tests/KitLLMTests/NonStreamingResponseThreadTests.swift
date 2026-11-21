@@ -111,18 +111,17 @@ struct NonStreamingResponseThreadTests {
     @Test("响应解析不在主线程上执行")
     func responseParsingRunsOffMainThread() async throws {
         let provider = makeProvider(responseData: try responseData())
-        OpenAICompatibleProviderAdapter.responseParseCounter.reset()
 
         _ = try await provider.complete(
             LLMRequest(messages: [LLMMessage(role: .user, content: "hi")])
         )
 
         #expect(
-            OpenAICompatibleProviderAdapter.responseParseCounter.count >= 1,
+            provider.responseParseCounter.count >= 1,
             "响应应被解析"
         )
         #expect(
-            OpenAICompatibleProviderAdapter.responseParseCounter.mainThreadCount == 0,
+            provider.responseParseCounter.mainThreadCount == 0,
             "响应解析不得在主线程上执行"
         )
     }
@@ -131,7 +130,6 @@ struct NonStreamingResponseThreadTests {
     @Test("含内联生成图片的响应解析也不在主线程上执行")
     func imageResponseParsingRunsOffMainThread() async throws {
         let provider = makeProvider(responseData: try responseData(includeImage: true))
-        OpenAICompatibleProviderAdapter.responseParseCounter.reset()
 
         let response = try await provider.complete(
             LLMRequest(messages: [LLMMessage(role: .user, content: "生成一张图")])
@@ -139,7 +137,7 @@ struct NonStreamingResponseThreadTests {
 
         #expect(response.images?.count == 1)
         #expect(
-            OpenAICompatibleProviderAdapter.responseParseCounter.mainThreadCount == 0,
+            provider.responseParseCounter.mainThreadCount == 0,
             "响应解析（含图片 base64 解码）不得在主线程上执行"
         )
     }

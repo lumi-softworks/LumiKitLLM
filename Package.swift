@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "LumiKitLLM",
-    platforms: [.macOS("14.0"), .iOS(.v17)],
+    platforms: [.macOS("14.0"), .iOS(.v17), .visionOS(.v1)],
     products: [
         .library(name: "KitLLM", targets: ["KitLLM"]),
     ],

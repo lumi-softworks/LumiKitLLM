@@ -110,6 +110,16 @@ public struct LLMModelInfo: Sendable, Equatable {
     /// 上下文窗口大小（token）；未知时为 `nil`。
     public let contextWindowSize: Int?
 
+    /// 运行该模型建议的最低物理内存（字节）；未知时为 `nil`。
+    ///
+    /// 这是「能否加载」的下限，不是实际峰值占用。
+    public let minimumMemoryBytes: Int64?
+
+    /// 模型文件在磁盘上的完整体积（字节）；未知时为 `nil`。
+    ///
+    /// 本地模型用于在下载前展示所需空间；已下载时 UI 应优先使用实际占用。
+    public let downloadSizeBytes: Int64?
+
     /// 是否支持流式输出。
     public let supportsStreaming: Bool
 
@@ -141,6 +151,8 @@ public struct LLMModelInfo: Sendable, Equatable {
         id: String,
         displayName: String? = nil,
         contextWindowSize: Int? = nil,
+        minimumMemoryBytes: Int64? = nil,
+        downloadSizeBytes: Int64? = nil,
         supportsStreaming: Bool = true,
         supportsVision: Bool = false,
         supportsTools: Bool = true,
@@ -150,6 +162,8 @@ public struct LLMModelInfo: Sendable, Equatable {
         self.id = id
         self.displayName = displayName ?? id
         self.contextWindowSize = contextWindowSize
+        self.minimumMemoryBytes = minimumMemoryBytes
+        self.downloadSizeBytes = downloadSizeBytes
         self.supportsStreaming = supportsStreaming
         self.supportsVision = supportsVision
         self.supportsTools = supportsTools

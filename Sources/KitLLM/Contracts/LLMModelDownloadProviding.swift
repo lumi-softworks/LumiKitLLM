@@ -43,6 +43,10 @@ public struct LLMModelDownloadState: Equatable, Sendable {
     public var progress: LLMModelDownloadProgress
     public var currentFileName: String?
     public var downloadedModelIDs: Set<String>
+    /// 已完整下载模型在磁盘上的实际占用；键为模型 id。
+    ///
+    /// 缺失时 UI 应回退到 `LLMModelInfo.downloadSizeBytes` 的估算体积。
+    public var downloadedModelSizesBytes: [String: Int64]
     public var cacheSizeBytes: Int64
     public var speedLimitBytesPerSecond: Int?
 
@@ -52,6 +56,7 @@ public struct LLMModelDownloadState: Equatable, Sendable {
         progress: LLMModelDownloadProgress = .init(),
         currentFileName: String? = nil,
         downloadedModelIDs: Set<String> = [],
+        downloadedModelSizesBytes: [String: Int64] = [:],
         cacheSizeBytes: Int64 = 0,
         speedLimitBytesPerSecond: Int? = nil
     ) {
@@ -60,6 +65,7 @@ public struct LLMModelDownloadState: Equatable, Sendable {
         self.progress = progress
         self.currentFileName = currentFileName
         self.downloadedModelIDs = downloadedModelIDs
+        self.downloadedModelSizesBytes = downloadedModelSizesBytes
         self.cacheSizeBytes = cacheSizeBytes
         self.speedLimitBytesPerSecond = speedLimitBytesPerSecond
     }
